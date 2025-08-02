@@ -1,6 +1,6 @@
 # nKernel
 [![GitHub license](https://img.shields.io/github/license/novafurry/nKernel)](https://github.com/novafurry/nKernel/blob/master/LICENSE)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/e78ad48f394f46d1bb98f1942c7e1f21)]()
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/85b7b1d7493544fb8175f73686663979)](https://app.codacy.com/gh/novafurry/nKernel/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![GitHub contributors](https://img.shields.io/github/contributors/novafurry/nKernel)](https://github.com/novafurry/nKernel/graphs/contributors)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/novafurry/nKernel)](https://github.com/novafurry/nKernel/commits)
 
