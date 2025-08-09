@@ -44,13 +44,11 @@ void listen_mouseEv(volatile int *running)
             y = (char)ptr[2];
             mouse_x += x;
             mouse_y -= y;
-            if (mouse_x < 1) mouse_x = 0;
-            if (fixMouse_x >SCREEN_WIDTH) fixMouse_x = SCREEN_WIDTH - 10;
-            if (mouse_y < 0) mouse_y = 0;
-            if (mouse_y >SCREEN_HEIGHT) mouse_y = SCREEN_HEIGHT - 10;
-            fixMouse_x = mouse_x - xOffset;
-            printf("FixX: %i\n",fixMouse_x);
-            printf("X%i Y%i\n", mouse_x, mouse_y);
+            if (mouse_x + 20 < 1) mouse_x = 20;
+            if (mouse_x + 20 >SCREEN_WIDTH) mouse_x = SCREEN_WIDTH - 20;
+            if (mouse_y + 21 < 0) mouse_y = 20;
+            if (mouse_y + 21 >SCREEN_HEIGHT) mouse_y = SCREEN_HEIGHT - 20;
+            fixMouse_x = mouse_x + 20 - xOffset;
             fflush(stdout);
         }
     }

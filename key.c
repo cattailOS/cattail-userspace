@@ -5,6 +5,8 @@
 #include <linux/input.h>
 #include "key.h"
 #include "mouse.h"
+#include "gpu.h"
+#include "keycode.h"
 
 void listen_for_keys(const char *device, volatile int *running) {
     int fd;
@@ -36,17 +38,23 @@ void listen_for_keys(const char *device, volatile int *running) {
             exit(EXIT_FAILURE);
         }
 
-        // Check if the event is a key event
-        if (ev.type == EV_KEY && ev.value == 1) { // Key press
+        // Check if the event is a key event (only process initial key press, not repeats)
+        if (ev.type == EV_KEY) { // Key press (not repeat)
             printf("Key pressed: %d\n", ev.code);
 
             // Exit the loop if key 35 is pressed
-            if (ev.code == 35) {
-                printf("Key 35 pressed. Exiting...\n");
-                *running = 0; // Signal the other thread to stop
-		        system("bash -c clear > /dev/tty2");
-                break;
-            }
+            // if (ev.code == 35) {
+            //     printf("Key 35 pressed. Exiting...\n");
+            //     *running = 0; // Signal the other thread to stop
+		    //     system("bash -c clear > /dev/tty2");
+            //     break;
+            // }
+            
+            // Use direct drawstring without mutex to prevent freezing
+            // Only draw on initial key press (ev.value == 1), not on repeats
+            char key_text[32];
+            snprintf(key_text, sizeof(key_text), "Key: %d", ev.code);
+            drawstring(key_text, 150, 150, 200, 100, 100);
         }
     }
 
