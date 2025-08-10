@@ -37,6 +37,14 @@ Basically, a "kernel" to support novaOS applications but its more just within th
 Bourne-Again SHell script to compile the code. Packs all `.c` files into a single `novaos` executable compiled for `x86_64`
 # [gpu.c](gpu.c)
 Responsible for all functionality related to drawing to the framebuffer.
-
-
+# [key.c](key.c)
+Handles `evdev` keyboard events. Currently fixed to reading from `/dev/input/event0`
+# [mouse.c](mouse.c)
+Handles `evdev` PS/2 Mouse events, reading from `/dev/input/mice`
+# [wm.c](wm.c)
+Manages windows (duh)
+# [main.c](main.c)
+Sets up all the threads relevant
+# [vgafon.c](vgafon.c)
+Contains the system font.
 
