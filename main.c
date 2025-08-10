@@ -41,16 +41,16 @@ int main() {
     // boot system
     usleep(100000); // 100ms pause to let draw() start
     add_text_message("Welcome to NovaOS!", 10, 10, 255, 255, 255);
-    sleep(2);
+    // sleep(2);
     add_text_message("Initialised Framebuffer (gpu.c)", 10, 30, 255, 255, 255);
     pthread_create(&key_thread, NULL, key_listener_thread, (void *)keyboard_device);
-    sleep(2);
+    // sleep(2);
     add_text_message("Initialised Keyboard (key.c)", 10, 50, 255, 255, 255);
     pthread_create(&mouse_thread, NULL, mouse_listener_thread, (void *)keyboard_device);
-    sleep(2);
+    // sleep(2);
     add_text_message("Initialised Mouse (mouse.c)", 10, 70, 255, 255, 255);
     pthread_create(&wm_thread, NULL, wm_thread_func, NULL);
-    sleep(2);
+    // sleep(2);
     add_text_message("Initialised WM (wm.c)", 10, 90, 255, 255, 255);
     
     // Text is now drawn in the render loop to prevent it from being overwritten

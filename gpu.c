@@ -8,14 +8,16 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include <pthread.h>
-
+#include <linux/vt.h>
+#include <linux/kd.h>
 #include "key.h"
+#include "wm.h"
 #include "gpu.h"
 #include "mouse.h"
 #include "vgafon.h"
 
 extern struct bitmap_font vgafon;
-
+int vt_fd = NULL;
 // Text message system
 text_message_t text_messages[MAX_TEXT_MESSAGES] = {0};
 
@@ -89,7 +91,7 @@ void drawstring(char *t, int x, int y, int fgR, int fgG, int fgB)
 {
     if (!global_buf)
         return;
-    
+
     int xpos = x;
     for (int i = 0; t[i] != '\0'; i++)
     {
@@ -162,6 +164,80 @@ void clearForeground()
         }
     }
 }
+void smartClearFgOld()
+{
+    int fgMask[800][1280] = {0};
+    for (size_t i = 0; i < window_count; i++)
+    {
+        for (int h = 0; h < 800; h++)
+        {
+            for (int w = 0; w < 1280; w++)
+            {
+                if(w < windows[i].x && w > windows[i].x + windows[i].width && h < windows[i].y && h > windows[i].y + windows[i].height){
+                    fgMask[h][w] = 0;
+                }
+                else{
+                    fgMask[h][w] = 1;
+                }
+            }
+        }
+    }
+
+    if (!global_buf)
+        return;
+    for (int h = 0; h < 800; h++)
+    {
+        for (int w = 0; w < 1280; w++)
+        {
+            if(fgMask[h][w] == 0){
+                global_buf[h][w][0] = 256;
+                global_buf[h][w][1] = 256;
+                global_buf[h][w][2] = 256;
+            }
+        }   
+    }
+}
+
+void smartClearFg()
+{
+    // Initialize the entire mask to 0 (no window)
+    int fgMask[800][1280] = {0};
+
+    // For each window, mark the pixels inside it as 1
+    for (size_t i = 0; i < window_count; i++)
+    {
+        // Iterate only over the pixels within the current window's bounds
+        for (int h = windows[i].y; h < windows[i].y + windows[i].height; h++)
+        {
+            for (int w = windows[i].x; w < windows[i].x + windows[i].width; w++)
+            {
+                // Boundary check to ensure we don't write out of fgMask's bounds
+                if (h >= 0 && h < 800 && w >= 0 && w < 1280)
+                {
+                    fgMask[h][w] = 1;
+                }
+            }
+        }
+    }
+
+    if (!global_buf)
+        return;
+
+    // Iterate through the screen and clear pixels where the mask is 0
+    for (int h = 0; h < 800; h++)
+    {
+        for (int w = 0; w < 1280; w++)
+        {
+            if(fgMask[h][w] == 0){
+                // A value of 255 is standard for the highest value in an 8-bit color channel.
+                // If your system requires 256, you can leave it.
+                global_buf[h][w][0] = 256;
+                global_buf[h][w][1] = 256;
+                global_buf[h][w][2] = 256;
+            }
+        }
+    }
+}
 void clearcurbuf()
 {
     if (!global_curbuf)
@@ -178,51 +254,54 @@ void clearcurbuf()
 }
 void drawMouse()
 {
-    char mouse_pointer[20][21] = {
-        "XX__________________",
-        "XXXX________________",
-        "XXXXX_______________",
-        "XXXXXXX_____________",
-        "XXXXXXXXX___________",
-        "XXXXXXXXXXX_________",
-        "XXXXXXXXXXXXX_______",
-        "XXXXXXXXXXXXXXX_____",
-        "XXXXXXXXXXXXXXXXX___",
-        "XXXXXXXXXXXXXXXXXXX_",
-        "_________XXXXX_______",
-        "__________XXXXX______",
-        "___________XXXXX_____",
-        "____________XXXXX____",
-        "_____________XXXXX___",
-        "______________XXXXX__",
-        "_______________XXXXX_",
-        "________________XXXXX",
-        "_____________________",
-        "_____________________"};
+    char mouse_pointer[13][21] = {
+        "X",
+        "XXX",
+        "XXXXX",
+        "XXXXXXX",
+        "XXXXXXXXXX",
+        "XXXXXXXXXXXX",
+        "XXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXX",
+        "XXXXXXXXXX",
+        "XXX_XXXXXX",
+        "X____XXXXXX",
+        "______XXXXXX",
+        "_______XXXXX",
+    };
 
     if (!global_curbuf)
         return;
 
-    for (int y = 0; y < 20; y++) {
-        for (int x = 0; x < 20; x++) {
-            if (mouse_pointer[y][x] == 'X') {
+    for (int y = 0; y < 13; y++)
+    {
+        for (int x = 0; x < 20; x++)
+        {
+            int realy = y;
+            if (mouse_pointer[realy][x] == 'X')
+            {
                 int draw_x = mouse_x + x;
                 int draw_y = mouse_y + y;
 
                 // Bounds check
-                if (draw_x >= 0 && draw_x < 1280 && draw_y >= 0 && draw_y < 800) {
+                if (draw_x >= 0 && draw_x < 1280 && draw_y >= 0 && draw_y < 800)
+                {
                     global_curbuf[draw_y][draw_x][0] = 255; // Red
-                    global_curbuf[draw_y][draw_x][1] = 0;
-                    global_curbuf[draw_y][draw_x][2] = 0;
+                    global_curbuf[draw_y][draw_x][1] = 255;
+                    global_curbuf[draw_y][draw_x][2] = 255;
                 }
             }
         }
     }
 }
 
-
 void draw(int buf[800][1280][3], int bgbuf[800][1280][3], volatile int *running)
 {
+    int target_vt = 2; // Set the target virtual terminal (e.g., tty2)
+    int vt_fd = open("/dev/tty2", O_RDWR);
+    ioctl(vt_fd, VT_ACTIVATE, target_vt);
+    ioctl(vt_fd, VT_WAITACTIVE, target_vt);
+    ioctl(vt_fd, KDSETMODE, KD_GRAPHICS);
     global_buf = buf;     // 💥 Save globally
     global_bgbuf = bgbuf; // 💥 Save globally
 
@@ -266,14 +345,14 @@ void draw(int buf[800][1280][3], int bgbuf[800][1280][3], volatile int *running)
         // Clear the foreground buffer to transparent at the start of each frame
         // clearForeground();
         drawMouse();
-        if (bLeft)
-            drawBg(120, 0, 0);
-        else if (bMiddle)
-            drawBg(0, 120, 0);
-        else if (bRight)
-            drawBg(0, 0, 120);
-        else
-            drawBg(0, 128, 127);
+        // if (bLeft)
+        //     drawBg(120, 0, 0);
+        // else if (bMiddle)
+        //     drawBg(0, 120, 0);
+        // else if (bRight)
+        //     drawBg(0, 0, 120);
+        // else
+        drawBg(0, 128, 127);
 
         // Draw all text messages from main.c
         for (int i = 0; i < MAX_TEXT_MESSAGES; i++)
@@ -318,8 +397,8 @@ void draw(int buf[800][1280][3], int bgbuf[800][1280][3], volatile int *running)
             }
         }
         clearcurbuf();
-        clearForeground();
-        usleep(30000);
+        smartClearFg();
+        // usleep(30000);
     }
 
     munmap(fbp, screensize);

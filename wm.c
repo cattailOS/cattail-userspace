@@ -4,23 +4,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "wm.h"
 
 int last_win_id = -1;
 int last_win_xoffset = -1;
 int last_win_yoffset = -1;
+int last_win_state = -1;
+// State: -1: none, 0: drag, 1: resize
 
-typedef struct
-{
-    int x, y;
-    int width, height;
-    char title[64];
+// Remove the typedef struct since it's now in the header
+// typedef struct { ... } Window;
 
-    int owner_id;
-    int win_id;
-
-    int ***buffer; // [height][width][3]
-} Window;
-
+// Make these global variables accessible from other files
 Window *windows = NULL;
 size_t window_count = 0;
 
@@ -87,6 +82,7 @@ void wm_init(int bufptr[800][1280][3])
     // make int buf be a pointer to whatever bufptr is pointing
     buf = (int (*)[800][1280][3])bufptr;
     add_window(create_window(200, 200, 100, 100, "Window!", 69, 420));
+    add_window(create_window(200, 200, 100, 100, "Window2!", 70, 421));
 }
 
 void wm_draw(volatile int *running)
@@ -103,6 +99,19 @@ void wm_draw(volatile int *running)
                 {
                     // Start dragging - calculate offset from window top-left
                     last_win_id = i;
+                    last_win_state = 0;
+                    last_win_xoffset = mouse_x - windows[i].x;
+                    last_win_yoffset = mouse_y - windows[i].y;
+                }
+            }
+            else if (mouse_x >= windows[i].x + windows[i].width - 10 && mouse_x < windows[i].x + windows[i].width &&
+                mouse_y >= windows[i].y + windows[i].height - 10 && mouse_y < windows[i].y + windows[i].height && bLeft)
+            {
+                if (last_win_id != i)
+                {
+                    // Start dragging - calculate offset from window top-left
+                    last_win_id = i;
+                    last_win_state = 1;
                     last_win_xoffset = mouse_x - windows[i].x;
                     last_win_yoffset = mouse_y - windows[i].y;
                 }
@@ -111,10 +120,11 @@ void wm_draw(volatile int *running)
             {
                 // Stop dragging
                 last_win_id = -1;
+                last_win_state = -1;
             }
 
             // Update window position if dragging
-            if (last_win_id == i && bLeft)
+            if (last_win_id == i && bLeft && last_win_state == 0)
             {
                 // Calculate new position
                 int new_x = mouse_x - last_win_xoffset;
@@ -133,7 +143,26 @@ void wm_draw(volatile int *running)
                 windows[i].x = new_x;
                 windows[i].y = new_y;
             }
-
+            // Update window size if resizing
+            if (last_win_id == i && bLeft && last_win_state == 1)
+            {
+                // Calculate new size based on mouse position relative to window origin
+                int new_width = mouse_x - windows[i].x;
+                int new_height = mouse_y - windows[i].y;
+                
+                // Set minimum window size
+                if (new_width < 50) new_width = 50;
+                if (new_height < 25) new_height = 25;
+                
+                // Set maximum window size to stay within screen bounds
+                if (windows[i].x + new_width > 1280) 
+                    new_width = 1280 - windows[i].x;
+                if (windows[i].y + new_height > 800) 
+                    new_height = 800 - windows[i].y;
+                
+                windows[i].width = new_width;
+                windows[i].height = new_height;
+            }
             // Draw window - with bounds checking
             for (int h = windows[i].y; h < windows[i].y + windows[i].height && h < 800; h++)
             {
@@ -143,24 +172,18 @@ void wm_draw(volatile int *running)
                 {
                     if (w < 0)
                         continue; // Skip negative columns
-                    // Check if mouse is over this window
-                    if (mouse_x >= windows[i].x && mouse_x < windows[i].x + windows[i].width &&
-                        mouse_y >= windows[i].y && mouse_y < windows[i].y + 25)
-                    {
-                        // Highlighted color
-                        (*buf)[h][w][0] = 50;
-                        (*buf)[h][w][1] = 255;
-                        (*buf)[h][w][2] = 50;
-                    }
-                    else
-                    {
-                        // Normal color
-                        (*buf)[h][w][0] = 50;
-                        (*buf)[h][w][1] = 50;
-                        (*buf)[h][w][2] = 255;
-                    }
+                    (*buf)[h][w][0] = 50;
+                    (*buf)[h][w][1] = 50;
+                    (*buf)[h][w][2] = 255;
                     if (w >= windows[i].x && w < windows[i].x + windows[i].width &&
                         h >= windows[i].y && h < windows[i].y + 25)
+                    {
+                        (*buf)[h][w][0] = 100;
+                        (*buf)[h][w][1] = 100;
+                        (*buf)[h][w][2] = 255;
+                    }
+                    if (w >= windows[i].x + windows[i].width - 10 && w < windows[i].x + windows[i].width &&
+                        h >= windows[i].y + windows[i].height - 10 && h < windows[i].y + windows[i].height)
                     {
                         (*buf)[h][w][0] = 100;
                         (*buf)[h][w][1] = 100;
@@ -169,7 +192,7 @@ void wm_draw(volatile int *running)
                 }
                 drawstring(windows[i].title, windows[i].x + 5, windows[i].y + 5, 255, 255, 255);
             }
-            usleep(30000);
+            // usleep(60000);
         }
     }
 }

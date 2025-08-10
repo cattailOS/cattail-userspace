@@ -1,1 +1,6 @@
+#/bin/bash
 gcc *.c -lm -o novaos -lpthread
+if [ "$1" = "r" ]
+then
+    ./novaos
+fi
