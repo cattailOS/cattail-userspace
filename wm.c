@@ -1,3 +1,4 @@
+// I love gays!
 #include "mouse.h"
 #include "gpu.h"
 #include <unistd.h>
