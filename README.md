@@ -4,7 +4,7 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/novafurry/nKernel)](https://github.com/novafurry/nKernel/graphs/contributors)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/novafurry/nKernel)](https://github.com/novafurry/nKernel/commits)
 
-The "kernel" for novafurry/novaOS. It's basically just a C application blehh :3
+The "userspace kernel" for novafurry/novaOS. It's basically just a C application blehh :3
 
 ## Preview
 <table>
@@ -28,7 +28,8 @@ The "kernel" for novafurry/novaOS. It's basically just a C application blehh :3
   </tr>
 </table>
 
-
+## The fuck is a "userspace kernel"?
+Basically, a "kernel" to support novaOS applications but its more just within the userspace. I really can't explain it better and I'm sure there's better ways to call it.
 
 ## Around the codebase
 # [build](build)
