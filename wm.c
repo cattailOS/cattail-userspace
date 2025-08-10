@@ -22,7 +22,16 @@ size_t window_count = 0;
 
 void add_window(Window new_window)
 {
-    windows = realloc(windows, sizeof(Window) * (window_count + 1));
+    Window *temp = realloc(windows, sizeof(Window) * (window_count + 1));
+    if (temp == NULL)
+    {
+        fprintf(stderr, "Failed to allocate memory for new window.\n");
+        // The original 'windows' pointer is still valid, so we should free it
+        // and its contents before exiting to avoid memory leaks.
+        destroy_windows(windows, window_count);
+        exit(EXIT_FAILURE);
+    }
+    windows = temp;
     windows[window_count++] = new_window;
 }
 int ***alloc_rgb_buffer(int height, int width)
