@@ -23,3 +23,5 @@ void wm_draw(volatile int *running);
 #endif // WM_H
 
 // dabatases (test commit for codacy to give status checks)
+// motherfucker its supposed to be PR not push
+// fucker
