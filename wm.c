@@ -66,7 +66,7 @@ Window create_window(int x, int y, int w, int h, const char *title, int owner_id
     win.y = y;
     win.width = w;
     win.height = h;
-    strncpy(win.title, title, 63);
+    snprintf(win.title, 63, "%s", title);
     win.title[63] = '\0';
     win.owner_id = owner_id;
     win.win_id = app_id;
