@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "key.h"
+#include <time.h>
 #include "gpu.h"
 #include "mouse.h"
 #include "wm.h"
