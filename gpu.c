@@ -114,7 +114,7 @@ void add_text_message(const char *text, int x, int y, int r, int g, int b)
     {
         if (!text_messages[i].active)
         {
-            strncpy(text_messages[i].text, text, sizeof(text_messages[i].text) - 1);
+            snprintf(text_messages[i].text, sizeof(text_messages[i].text), "%s", text);
             text_messages[i].text[sizeof(text_messages[i].text) - 1] = '\0';
             text_messages[i].x = x;
             text_messages[i].y = y;
