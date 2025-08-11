@@ -31,13 +31,14 @@ void listen_for_keys(const char *device, volatile int *running) {
             exit(EXIT_FAILURE);
         }
 
-        // Ensure we read a full input_event structure and prevent buffer overflow
-        if ((size_t)bytes != sizeof(struct input_event)) {
-            fprintf(stderr, "Incomplete or oversized input event read\n");
-            // If not in a loop that must continue, exiting is safest.
-            // For robustness, one might try to recover, but for this case, we exit.
-            close(fd);
-            exit(EXIT_FAILURE);
+        // Ensure we read a full input_event structure to prevent processing partial/invalid data.
+        if ((size_t)bytes < sizeof(struct input_event)) {
+            // If we read 0 bytes, it might be EOF. If *running is true, we might block again.
+            // If we read a partial event, it's better to log and continue or exit.
+            if (bytes > 0) {
+                fprintf(stderr, "Incomplete input event read (%zd bytes)\n", bytes);
+            }
+            continue; // Skip this partial event and try to read the next one.
         }
 
         // Check if the event is a key event (only process initial key press, not repeats)
