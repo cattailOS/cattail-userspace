@@ -35,7 +35,23 @@ void listen_mouseEv(volatile int *running)
 
 
     while (*running) {
-        if (read(fd, &ie, sizeof(struct input_event)) != -1) {
+        // Read an input event
+        ssize_t bytes = read(fd, &ie, sizeof(struct input_event));
+        if (bytes < 0) {
+            perror("Error reading input event");
+            close(fd);
+            exit(EXIT_FAILURE);
+        }
+
+        // Ensure we read a full input_event structure and prevent buffer overflow
+        if ((size_t)bytes != sizeof(struct input_event)) {
+            fprintf(stderr, "Incomplete or oversized input event read\n");
+            // If not in a loop that must continue, exiting is safest.
+            // For robustness, one might try to recover, but for this case, we exit.
+            close(fd);
+            exit(EXIT_FAILURE);
+        }
+        if (bytes != -1) {
             button = ptr[0];
             bLeft = button & 0x1;
             bMiddle = (button & 0x4) > 0;

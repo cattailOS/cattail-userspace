@@ -25,15 +25,17 @@ void listen_for_keys(const char *device, volatile int *running) {
     while (*running) {
         // Read an input event
         ssize_t bytes = read(fd, &ev, sizeof(struct input_event));
-        if (bytes == (ssize_t)-1) {
+        if (bytes < 0) {
             perror("Error reading input event");
             close(fd);
             exit(EXIT_FAILURE);
         }
 
-        // Ensure we read a full input_event structure
-        if (bytes != sizeof(struct input_event)) {
-            fprintf(stderr, "Incomplete input event read\n");
+        // Ensure we read a full input_event structure and prevent buffer overflow
+        if ((size_t)bytes != sizeof(struct input_event)) {
+            fprintf(stderr, "Incomplete or oversized input event read\n");
+            // If not in a loop that must continue, exiting is safest.
+            // For robustness, one might try to recover, but for this case, we exit.
             close(fd);
             exit(EXIT_FAILURE);
         }
