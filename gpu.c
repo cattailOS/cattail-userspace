@@ -17,7 +17,7 @@
 #include "vgafon.h"
 
 extern struct bitmap_font vgafon;
-int vt_fd = NULL;
+int vt_fd = -1;  // Use -1 instead of NULL for invalid file descriptor
 // Text message system
 text_message_t text_messages[MAX_TEXT_MESSAGES] = {0};
 

@@ -3,6 +3,9 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "key.h"
+#ifdef __has_include(<time.h>)
+#include <time.h>
+#endif
 #include "gpu.h"
 #include "mouse.h"
 #include "wm.h"
@@ -39,7 +42,11 @@ int main() {
     sleep(2);
     system("bash -c clear > /dev/tty2");
     // boot system
-    usleep(100000); // 100ms pause to let draw() start
+    struct timespec req = {0};
+    req.tv_sec = 0;            // seconds
+    req.tv_nsec = 100000000L;  // nanoseconds (100,000,000 ns = 100 ms)
+
+    nanosleep(&req, NULL); // 100ms pause to let draw() start
     add_text_message("Welcome to NovaOS!", 10, 10, 255, 255, 255);
     // sleep(2);
     add_text_message("Initialised Framebuffer (gpu.c)", 10, 30, 255, 255, 255);
