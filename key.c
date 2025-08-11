@@ -26,7 +26,7 @@ void listen_for_keys(const char *device, volatile int *running) {
         // Read an input event
         ssize_t bytes = read(fd, &ev, sizeof(struct input_event));
         if (bytes < 0) {
-            perror("Error reading input event");
+            perror("Error reading input event1");
             close(fd);
             exit(EXIT_FAILURE);
         }

@@ -103,7 +103,7 @@ void wm_draw(volatile int *running)
         {
             // Check if mouse is over window and left button pressed
             if (mouse_x >= windows[i].x && mouse_x < windows[i].x + windows[i].width &&
-                mouse_y >= windows[i].y && mouse_y < windows[i].y + 25 && bLeft)
+                mouse_y >= windows[i].y && mouse_y < windows[i].y + 25 && bLeft && last_win_id == -1 && last_win_state == -1)
             {
                 if (last_win_id != i)
                 {
@@ -115,7 +115,7 @@ void wm_draw(volatile int *running)
                 }
             }
             else if (mouse_x >= windows[i].x + windows[i].width - 10 && mouse_x < windows[i].x + windows[i].width &&
-                mouse_y >= windows[i].y + windows[i].height - 10 && mouse_y < windows[i].y + windows[i].height && bLeft)
+                mouse_y >= windows[i].y + windows[i].height - 10 && mouse_y < windows[i].y + windows[i].height && bLeft && last_win_id == -1 && last_win_state == -1)
             {
                 if (last_win_id != i)
                 {
