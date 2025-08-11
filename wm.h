@@ -22,7 +22,3 @@ void wm_draw(volatile int *running);
 void destroy_windows(Window *windows, size_t count);
 
 #endif // WM_H
-
-// dabatases (test commit for codacy to give status checks)
-// motherfucker its supposed to be PR not push
-// fucker
