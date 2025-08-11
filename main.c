@@ -3,9 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include "key.h"
-#ifdef __has_include(<time.h>)
 #include <time.h>
-#endif
 #include "gpu.h"
 #include "mouse.h"
 #include "wm.h"
