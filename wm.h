@@ -19,5 +19,6 @@ extern size_t window_count;
 // Function declarations
 void wm_init(int bufptr[800][1280][3]);
 void wm_draw(volatile int *running);
+void destroy_windows(Window *windows, size_t count);
 
 #endif // WM_H
