@@ -19,6 +19,7 @@ void draw(int buf[800][1280][3], int bgbuf[800][1280][3], volatile int *running)
 void putpixel(int colorR, int colorG, int colorB, int x, int y);
 void drawchar(unsigned int c, int x, int y, int fgR, int fgG, int fgB);
 void drawstring(char* t, int x, int y, int fgR, int fgG, int fgB);
+int ***drawstring2buf(char *t, int x, int y, int fgR, int fgG, int fgB);
 void drawstring_safe(char* t, int x, int y, int fgR, int fgG, int fgB);
 void add_text_message(const char* text, int x, int y, int r, int g, int b);
 void clear_text_messages();

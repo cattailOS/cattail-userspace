@@ -85,7 +85,7 @@ void destroy_windows(Window *windows, size_t count)
 // Initialise an empty buf
 static int (*buf)[800][1280][3] = NULL;
 volatile int wmActive = 0;
-
+int wmap[800][1280] = {-1};
 // Pull a pointer to our actual buf in from the caller
 void wm_init(int bufptr[800][1280][3])
 {
@@ -95,10 +95,42 @@ void wm_init(int bufptr[800][1280][3])
     add_window(create_window(200, 200, 100, 100, "Window2!", 70, 421));
 }
 
+
 void wm_draw(volatile int *running)
 {
     while (*running)
     {
+        
+        // int wmap[800][1280]; // Define the array
+
+        // // Initialize all elements to -1
+        // for (int y = 0; y < 800; ++y) {
+        //     for (int x = 0; x < 1280; ++x) {
+        //         if (y >= 0 && y < 800 && x >= 0 && x < 1280) {
+        //             wmap[y][x] = -1;
+        //         }
+        //     }
+        // }
+
+        // // Map window indices
+        // for (size_t i = 0; i < window_count; i++) {
+        //     for (int y = windows[i].y; y < windows[i].y + windows[i].height; y++) {
+        //         for (int x = windows[i].x; x < windows[i].x + windows[i].width; x++) {
+        //             if (x >= 0 && x < 1280 && y >= 0 && y < 800)
+        //                 wmap[y][x] = i;
+        //         }
+        //     }
+        // }
+
+        // for(int h = 0; h < 800; h++){
+        //     for(int w = 0; w < 1280; w++){
+        //         if(wmap[h][w] == -1 && h >= 0 && h < 800 && w >= 0 && w < 1280){
+        //             (*buf)[h][w][0] = 10;
+        //             (*buf)[h][w][1] = 20;
+        //             (*buf)[h][w][2] = 30;
+        //         }
+        //     }
+        // }
         for (size_t i = 0; i < window_count; i++)
         {
             // Check if mouse is over window and left button pressed
@@ -173,6 +205,8 @@ void wm_draw(volatile int *running)
                 windows[i].width = new_width;
                 windows[i].height = new_height;
             }
+            int (*wintitlebuf)[800][1280][3] = drawstring2buf(windows[i].title, windows[i].x + 5, windows[i].y + 5, 255, 255, 255);
+            // int (*wintitlebuf)[800][1280][3] ={255};
             // Draw window - with bounds checking
             for (int h = windows[i].y; h < windows[i].y + windows[i].height && h < 800; h++)
             {
@@ -180,27 +214,31 @@ void wm_draw(volatile int *running)
                     continue; // Skip negative rows
                 for (int w = windows[i].x; w < windows[i].x + windows[i].width && w < 1280; w++)
                 {
-                    if (w < 0)
-                        continue; // Skip negative columns
-                    (*buf)[h][w][0] = 50;
-                    (*buf)[h][w][1] = 50;
-                    (*buf)[h][w][2] = 255;
-                    if (w >= windows[i].x && w < windows[i].x + windows[i].width &&
-                        h >= windows[i].y && h < windows[i].y + 25)
-                    {
-                        (*buf)[h][w][0] = 100;
-                        (*buf)[h][w][1] = 100;
+                    if(1 == 1){
+                        if (w < 0)
+                            continue; // Skip negative columns
+                        (*buf)[h][w][0] = 50;
+                        (*buf)[h][w][1] = 50;
                         (*buf)[h][w][2] = 255;
-                    }
-                    if (w >= windows[i].x + windows[i].width - 10 && w < windows[i].x + windows[i].width &&
-                        h >= windows[i].y + windows[i].height - 10 && h < windows[i].y + windows[i].height)
-                    {
-                        (*buf)[h][w][0] = 100;
-                        (*buf)[h][w][1] = 100;
-                        (*buf)[h][w][2] = 255;
+                        // (*buf)[h][w][0] = wintitlebuf[h][w][0];
+                        // (*buf)[h][w][1] = wintitlebuf[h][w][1];
+                        // (*buf)[h][w][2] = wintitlebuf[h][w][2];
+                        if (w >= windows[i].x && w < windows[i].x + windows[i].width &&
+                            h >= windows[i].y && h < windows[i].y + 25)
+                        {
+                            (*buf)[h][w][0] = 100;
+                            (*buf)[h][w][1] = 100;
+                            (*buf)[h][w][2] = 255;
+                        }
+                        if (w >= windows[i].x + windows[i].width - 10 && w < windows[i].x + windows[i].width &&
+                            h >= windows[i].y + windows[i].height - 10 && h < windows[i].y + windows[i].height)
+                        {
+                            (*buf)[h][w][0] = 100;
+                            (*buf)[h][w][1] = 100;
+                            (*buf)[h][w][2] = 255;
+                        }
                     }
                 }
-                drawstring(windows[i].title, windows[i].x + 5, windows[i].y + 5, 255, 255, 255);
             }
             // usleep(60000);
         }

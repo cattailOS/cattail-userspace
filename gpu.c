@@ -87,6 +87,30 @@ void drawchar(unsigned int c, int x, int y, int fgR, int fgG, int fgB)
     }
 }
 
+void drawchar2buf(int ***cbuf, unsigned int c, int x, int y, int fgR, int fgG, int fgB) {
+    const struct bitmap_font *f = &vgafon;
+    int glyph_index = find_glyph_index(f, c);
+    if (glyph_index < 0) return;
+
+    const unsigned char *glyph = f->Bitmap + glyph_index * f->Height;
+    int mask[8] = {1, 2, 4, 8, 16, 32, 64, 128};
+
+    for (int cy = 0; cy < f->Height; cy++) {
+        for (int cx = 0; cx < f->Widths[glyph_index]; cx++) {
+            int byte = glyph[cy];
+            if (byte & mask[7 - cx]) {
+                int draw_x = x + cx;
+                int draw_y = y + cy;
+                if (draw_x >= 0 && draw_y >= 0) {
+                    cbuf[draw_y][draw_x][0] = fgR;
+                    cbuf[draw_y][draw_x][1] = fgG;
+                    cbuf[draw_y][draw_x][2] = fgB;
+                }
+            }
+        }
+    }
+}
+
 void drawstring(char *t, int x, int y, int fgR, int fgG, int fgB)
 {
     if (!global_buf)
@@ -99,6 +123,32 @@ void drawstring(char *t, int x, int y, int fgR, int fgG, int fgB)
         xpos += 10;
     }
 }
+int ***drawstring2buf(char *t, int x, int y, int fgR, int fgG, int fgB) {
+    // Allocate a full-screen buffer (or adjust size as needed)
+    int height = 800;
+    int width = 1280;
+
+    int ***cbuf = malloc(height * sizeof(int **));
+    for (int i = 0; i < height; i++) {
+        cbuf[i] = malloc(width * sizeof(int *));
+        for (int j = 0; j < width; j++) {
+            cbuf[i][j] = malloc(3 * sizeof(int));
+            cbuf[i][j][0] = 256; // Transparent or default
+            cbuf[i][j][1] = 256;
+            cbuf[i][j][2] = 256;
+        }
+    }
+
+    int xpos = x;
+    for (int i = 0; t[i] != '\0'; i++) {
+        drawchar2buf(cbuf, t[i], xpos, y, fgR, fgG, fgB);
+        xpos += 10;
+    }
+
+    return cbuf;
+}
+
+
 
 // Thread-safe version of drawstring
 void drawstring_safe(char *t, int x, int y, int fgR, int fgG, int fgB)
@@ -223,14 +273,12 @@ void smartClearFg()
     if (!global_buf)
         return;
 
-    // Iterate through the screen and clear pixels where the mask is 0
+    // Iterate through the screen and clear pixels where the mask is 0, by setting to 256
     for (int h = 0; h < 800; h++)
     {
         for (int w = 0; w < 1280; w++)
         {
             if(fgMask[h][w] == 0){
-                // A value of 255 is standard for the highest value in an 8-bit color channel.
-                // If your system requires 256, you can leave it.
                 global_buf[h][w][0] = 256;
                 global_buf[h][w][1] = 256;
                 global_buf[h][w][2] = 256;
@@ -398,6 +446,7 @@ void draw(int buf[800][1280][3], int bgbuf[800][1280][3], volatile int *running)
         }
         clearcurbuf();
         smartClearFg();
+        // clearForeground();
         // usleep(30000);
     }
 

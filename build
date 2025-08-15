@@ -1,6 +1,11 @@
 #/bin/bash
-gcc *.c -lm -o novaos -lpthread
+rm 175*.c
+gcc *.c -lm -o novaos -lpthread -g
 if [ "$1" = "r" ]
 then
     ./novaos
+fi
+if [ "$1" = "rw" ]
+then
+    $2 ./novaos
 fi
