@@ -4,11 +4,35 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <linux/input.h>
-#include "mouse.h"  
+#include "mouse.h"
+#include <time.h>  
 
 #define MOUSEFILE "/dev/input/event1"  // Change to proper event device
 #define SCREEN_WIDTH  1280
 #define SCREEN_HEIGHT 800
+
+time_t current_timestamp;
+int bLeftDownTime = -1;
+int bMiddleDownTime = -1;
+int bRightDownTime = -1;
+
+int bLeftPos = -1;
+int bMiddlePos = -1;
+int bRightPos = -1;
+
+
+int bLeftRich = -1;
+int bMiddleRich = -1;
+int bRightRich = -1;
+
+// Helper macros to pack/unpack coordinates
+#define PACK_COORDS(x, y) (((x) << 16) | ((y) & 0xFFFF))
+#define UNPACK_X(packed) ((packed) >> 16)
+#define UNPACK_Y(packed) ((packed) & 0xFFFF)
+#define IS_DRAG(start_packed, curr_x, curr_y) \
+    ((start_packed != -1) && \
+     (((curr_x - UNPACK_X(start_packed)) * (curr_x - UNPACK_X(start_packed)) + \
+       (curr_y - UNPACK_Y(start_packed)) * (curr_y - UNPACK_Y(start_packed))) > 100))
 
 int mouse_x = SCREEN_WIDTH / 2;
 int mouse_y = SCREEN_HEIGHT / 2;
@@ -33,6 +57,18 @@ void listen_mouseEv(volatile int *running)
     }
 
     while (*running) {
+        if(bLeft && time(NULL) - bLeftDownTime < 1){
+            bLeftRich = 1;
+        }
+        else if(bLeft && time(NULL) - bLeftDownTime > 1 && !IS_DRAG(bLeftPos, mouse_x, mouse_y)){
+            bLeftRich = 2;
+        }
+        else if(bLeft && time(NULL) - bLeftDownTime > 1 && IS_DRAG(bLeftPos, mouse_x, mouse_y)){
+            bLeftRich = 3;
+        }
+        else{
+            bLeftRich = 0;
+        }
         ssize_t bytes = read(fd, &ie, sizeof(struct input_event));
         if (bytes < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -48,7 +84,7 @@ void listen_mouseEv(volatile int *running)
             usleep(1000);
             continue;
         }
-
+        
         if ((size_t)bytes == sizeof(struct input_event)) {
             // Handle mouse movement events
             if (ie.type == EV_REL) {
@@ -68,16 +104,19 @@ void listen_mouseEv(volatile int *running)
             // Handle button events
             else if (ie.type == EV_KEY) {
                 if (ie.code == BTN_LEFT) {
+                    bLeftPos = PACK_COORDS(mouse_x, mouse_y);
+                    bLeftDownTime = time(NULL);
                     bLeft = ie.value;
                 }
                 else if (ie.code == BTN_RIGHT) {
+                    bLeftDownTime = time(NULL);
                     bRight = ie.value;
                 }
                 else if (ie.code == BTN_MIDDLE) {
+                    bLeftDownTime = time(NULL);
                     bMiddle = ie.value;
                 }
             }
-            
             fixMouse_x = mouse_x + 20 - xOffset;
         }
     }

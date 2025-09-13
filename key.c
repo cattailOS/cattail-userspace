@@ -43,7 +43,7 @@ void listen_for_keys(const char *device, volatile int *running) {
 
         // Check if the event is a key event (only process initial key press, not repeats)
         if (ev.type == EV_KEY) { // Key press (not repeat)
-            printf("Key pressed: %d\n", ev.code);
+            // printf("Key pressed: %d\n", ev.code);
 
             // Exit the loop if key 35 is pressed
             // if (ev.code == 35) {

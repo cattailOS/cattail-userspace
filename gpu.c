@@ -129,10 +129,39 @@ int ***drawstring2buf(char *t, int x, int y, int fgR, int fgG, int fgB) {
     int width = 1280;
 
     int ***cbuf = malloc(height * sizeof(int **));
+    if (!cbuf) return NULL; // Add null check
+    
     for (int i = 0; i < height; i++) {
         cbuf[i] = malloc(width * sizeof(int *));
+        if (!cbuf[i]) {
+            // Free previously allocated memory on failure
+            for (int j = 0; j < i; j++) {
+                for (int k = 0; k < width; k++) {
+                    free(cbuf[j][k]);
+                }
+                free(cbuf[j]);
+            }
+            free(cbuf);
+            return NULL;
+        }
+        
         for (int j = 0; j < width; j++) {
             cbuf[i][j] = malloc(3 * sizeof(int));
+            if (!cbuf[i][j]) {
+                // Free previously allocated memory on failure
+                for (int k = 0; k < j; k++) {
+                    free(cbuf[i][k]);
+                }
+                for (int k = 0; k < i; k++) {
+                    for (int l = 0; l < width; l++) {
+                        free(cbuf[k][l]);
+                    }
+                    free(cbuf[k]);
+                }
+                free(cbuf[i]);
+                free(cbuf);
+                return NULL;
+            }
             cbuf[i][j][0] = 256; // Transparent or default
             cbuf[i][j][1] = 256;
             cbuf[i][j][2] = 256;
@@ -146,6 +175,21 @@ int ***drawstring2buf(char *t, int x, int y, int fgR, int fgG, int fgB) {
     }
 
     return cbuf;
+}
+
+// Add a function to free the buffer returned by drawstring2buf
+void free_drawstring_buffer(int ***cbuf, int height, int width) {
+    if (!cbuf) return;
+    
+    for (int i = 0; i < height; i++) {
+        if (cbuf[i]) {
+            for (int j = 0; j < width; j++) {
+                free(cbuf[i][j]);
+            }
+            free(cbuf[i]);
+        }
+    }
+    free(cbuf);
 }
 
 
@@ -250,8 +294,21 @@ void smartClearFgOld()
 
 void smartClearFg()
 {
-    // Initialize the entire mask to 0 (no window)
-    int fgMask[800][1280] = {0};
+    // Use heap allocation instead of stack to avoid overflow
+    int **fgMask = malloc(800 * sizeof(int*));
+    if (!fgMask) return;
+    
+    for (int i = 0; i < 800; i++) {
+        fgMask[i] = calloc(1280, sizeof(int)); // calloc initializes to 0
+        if (!fgMask[i]) {
+            // Free previously allocated rows on failure
+            for (int j = 0; j < i; j++) {
+                free(fgMask[j]);
+            }
+            free(fgMask);
+            return;
+        }
+    }
 
     // For each window, mark the pixels inside it as 1
     for (size_t i = 0; i < window_count; i++)
@@ -270,8 +327,14 @@ void smartClearFg()
         }
     }
 
-    if (!global_buf)
+    if (!global_buf) {
+        // Free allocated memory before returning
+        for (int i = 0; i < 800; i++) {
+            free(fgMask[i]);
+        }
+        free(fgMask);
         return;
+    }
 
     // Iterate through the screen and clear pixels where the mask is 0, by setting to 256
     for (int h = 0; h < 800; h++)
@@ -285,6 +348,12 @@ void smartClearFg()
             }
         }
     }
+    
+    // Free the allocated memory
+    for (int i = 0; i < 800; i++) {
+        free(fgMask[i]);
+    }
+    free(fgMask);
 }
 void clearcurbuf()
 {

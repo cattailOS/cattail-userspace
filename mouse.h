@@ -8,6 +8,17 @@ extern int fixMouse_x;
 extern unsigned char bLeft;
 extern unsigned char bMiddle;
 extern unsigned char bRight;
+extern int bLeftDownTime;
+extern int bMiddleDownTime;
+extern int bRightDownTime;
 
+extern int bLeftPos;
+extern int bMiddlePos;
+extern int bRightPos;
+
+
+extern int bLeftRich;
+extern int bMiddleRich;
+extern int bRightRich;
 
 #endif
