@@ -5,7 +5,7 @@
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/novafurry/nKernel)](https://github.com/novafurry/nKernel/commits)
 [![Matrix: #novaos:novafurry.win](https://img.shields.io/matrix/novaos%3Anovafurry.win?server_fqdn=matrix.novafurry.win&fetchMode=summary&style=flat&label=Matrix%3A%20%23novaos%3Anovafurry.win&link=https%3A%2F%2Fmatrix.to%2F%23%2F%2523novaos%3Anovafurry.win)](https://matrix.to/#/#novaos:novafurry.win)
 
-The "userspace kernel" for novafurry/novaOS. It's basically just a C application blehh :3
+cattail's userspace and shell
 
 ## Preview
 <table>
@@ -29,12 +29,9 @@ The "userspace kernel" for novafurry/novaOS. It's basically just a C application
   </tr>
 </table>
 
-## The fuck is a "userspace kernel"?
-Basically, a "kernel" to support novaOS applications but its more just within the userspace. I really can't explain it better and I'm sure there's better ways to call it.
-
 ## Around the codebase
 # [build](build)
-Bourne-Again SHell script to compile the code. Packs all `.c` files into a single `novaos` executable compiled for `x86_64`
+Bourne-Again SHell script to compile the code. Packs all `.c` files into a single `cattail` executable compiled for `x86_64`
 # [gpu.c](gpu.c)
 Responsible for all functionality related to drawing to the framebuffer.
 # [key.c](key.c)
