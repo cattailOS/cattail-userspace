@@ -5,8 +5,8 @@
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/novafurry/nKernel)](https://github.com/novafurry/nKernel/commits)
 [![Matrix: #novaos:novafurry.win](https://img.shields.io/matrix/novaos%3Anovafurry.win?server_fqdn=matrix.novafurry.win&fetchMode=summary&style=flat&label=Matrix%3A%20%23novaos%3Anovafurry.win&link=https%3A%2F%2Fmatrix.to%2F%23%2F%2523novaos%3Anovafurry.win)](https://matrix.to/#/#novaos:novafurry.win)
 
-cattail's userspace and shell
-
+tinytail's userspace and shell
+(tinytail is a future version of cattail designed for absolutely horrible machines)
 ## Preview
 <table>
   <tr>
